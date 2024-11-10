@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>European Shopping Cart</title>
+    <!-- PayPal JS SDK Script with Euro currency setting -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AXc-HOv7AHjmqShB7VwpKOpggMGlhvaWoKLknKBLIBijBAQY-KCCpSmO9jqtt7VsRU2Yn-D7gh7oRV-i&currency=EUR&intent=capture"></script>
+</head>
+<body>
+    <h1>Shopping Cart</h1>
+    <div>
+        <p><strong>Product:</strong> Mystery Pack </p>
+        <p><strong>Item Number:</strong> 23401</p>
+        <p><strong>Price:</strong> €10.00</p>
+    </div>
+
+    <form id="buyer-info-form">
+        <h2>Buyer Information</h2>
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <input type="text" name="last_name" placeholder="Last Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="tel" name="phone" placeholder="Phone Number" required>
+        <input type="text" name="address_line1" placeholder="Address Line 1" required>
+        <input type="text" name="address_line2" placeholder="Address Line 2">
+        <input type="text" name="state" placeholder="County" required>
+        <input type="text" name="eircode" placeholder="Eircode" required>
+        <input type="text" name="country" placeholder="Country" value="IE" required>
+    </form>
+
+    <!-- PayPal Button Container -->
+    <div id="paypal-button-container"></div>
+
+    <script>
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                const formData = new FormData(document.getElementById('buyer-info-form'));
+                return fetch('/api/create-order', {
+                    method: 'POST',
+                    body: JSON.stringify(Object.fromEntries(formData.entries())),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => response.json()).then(order => order.id);
+            },
+            onApprove: function(data, actions) {
+                return fetch(`/api/capture-order/${data.orderID}`, {
+                    method: 'POST'
+                }).then(response => response.json()).then(order => {
+                    alert("Transaction completed! Transaction ID: " + order.id);
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
+</body>
+</html>
